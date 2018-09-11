@@ -9,6 +9,17 @@ ext.getStringProperty = { name, defaultValue ->
     return propertyValue != null ? propertyValue.toString().trim() : defaultValue
 }
 
+def currentOS = org.gradle.internal.os.OperatingSystem.current();
+def classifier
+if (currentOS.isWindows()) {
+    classifier = 'win'
+} else if (currentOS.isLinux()) {
+    classifier = 'linux'
+} else if (currentOS.isMacOsX()) {
+    classifier = 'mac'
+}
+
+
 subprojects {
     apply plugin: 'java'
 
@@ -32,8 +43,31 @@ subprojects {
         mavenCentral()
     }
 
+compileJava {
+    doFirst {
+//        println classpath.asPath
+        options.compilerArgs = [
+            '--module-path', classpath.asPath,
+            '--add-modules', 'javafx.web',
+            '--add-modules', 'javafx.swing',
+            '--add-modules', 'javafx.media',
+            '--add-modules', 'javafx.controls',
+            '--add-modules', 'javafx.fxml'
+        ]
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+
     dependencies {
         // maven dependencies
+        compile "org.openjfx:javafx-web:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-swing:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-media:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-fxml:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-controls:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-graphics:11-ea+25:$classifier"
+        compile "org.openjfx:javafx-base:11-ea+25:$classifier"
         compile 'org.eclipse.aether:aether-api:1.1.0'
         compile 'org.eclipse.aether:aether-impl:1.1.0'
         compile 'org.eclipse.aether:aether-connector-basic:1.1.0'
